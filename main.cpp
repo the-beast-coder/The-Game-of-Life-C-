@@ -3,7 +3,7 @@
 #include <fstream>
 #include <vector>
 #include <bits/stdc++.h>
-#include <time.h>
+#include <chrono>
 
 int width;
 int height;
@@ -11,12 +11,17 @@ int height;
 int boardWidth;
 int boardHeight;
 
+std::chrono::time_point<std::chrono::steady_clock> prevTime;
 int delay;
+bool shouldMove;
+
+float cameraOffset [2] = {0, 0};
 
 void render(void);
 void getBoard();
 void move();
 void timer (int);
+void keyboard (unsigned char c, int x, int y);
 
 std::vector<std::vector<bool>> board;
 
@@ -25,7 +30,10 @@ int main (int argc, char **argv) {
     boardWidth = 10;
     width = 500;
     height = 500;
-    delay = 1000; //1 second delay
+
+    delay = 1000;
+    prevTime = std::chrono::steady_clock::now();
+
     getBoard();
 
     //glut window initialization
@@ -37,7 +45,9 @@ int main (int argc, char **argv) {
     glutCreateWindow("The game of Life");
 
     glutDisplayFunc(render);
-    glutTimerFunc(0, timer, 0);
+    glutTimerFunc(0, timer, 0); //call the timer function to run at the start of the game
+    glutKeyboardFunc(keyboard);
+
     glutMainLoop();
 
 }
@@ -46,13 +56,17 @@ void render (void) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glPointSize(width/boardWidth);
     glBegin(GL_POINTS);
-    move();
+    int millisecondDifference = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()-prevTime).count();
+    if (millisecondDifference > delay) {
+        move();
+        prevTime = std::chrono::steady_clock::now();
+    }
     for (uint16_t y = 0; y < boardHeight; y++) {
         for (uint16_t x = 0; x < boardWidth; x++) {
             if (board[y][x]) {
                 float thisX = 1.0 * x; //doing this to convert x to a float
                 float thisY = 1.0 * y; //doing this to convert x to a float
-                glVertex2f(thisX / boardWidth * 2 - 0.9, thisY / boardHeight * 2 - 0.9);
+                glVertex2f(thisX / boardWidth * 2 - 0.9 + cameraOffset[0], thisY / boardHeight * 2 - 0.9 + cameraOffset[1]);
             }
         }
     }
@@ -60,10 +74,25 @@ void render (void) {
     glutSwapBuffers();
 }
 
+void keyboard (unsigned char c, int x, int y) {
+    //inversed because the board moves the opposite direction of user
+    if (c == 'd') {
+        cameraOffset[0] -= 0.1;
+    }
+    if (c == 'a') {
+        cameraOffset[0] += 0.1;
+    }
+    if (c == 'w') {
+        cameraOffset[1] -= 0.1;
+    }
+    if (c == 's') {
+        cameraOffset[1] += 0.1;
+    }
+}
+
 void move () {
     //enter move code here
     std::vector<std::vector<bool>> boardCopy = board;
-    std::cout << "Hello" << std::endl;
     for (int y = 0; y < boardHeight; y++) {
         for (int x = 0; x < boardWidth; x++) {
             uint16_t surroundingCells = 0;
@@ -72,8 +101,8 @@ void move () {
                surroundingCells++;
             }
             if (x < boardWidth-1 && board[y][x+1]) {
-               surroundingCells++;
-            }
+               surroundingCells++;}
+
 
             //check for vertical cells
             if (y > 0 && board[y-1][x]) {
@@ -115,7 +144,7 @@ void getBoard () {
 
     for (int y = 0; y < boardHeight; y++) {
         getline(file, line);
-        board.push_back({});
+        board.push_back({}); //create a blank new vector
 
         for (int x = 0; x < boardWidth; x++) {
             char thisChar = line.at(x);
@@ -134,5 +163,6 @@ void getBoard () {
 
 void timer (int) {
     glutPostRedisplay();
-    glutTimerFunc(delay, timer, 0); //call the display func every x seconds
+
+    glutTimerFunc(20, timer, 0);
 }
