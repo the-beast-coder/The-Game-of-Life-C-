@@ -1,0 +1,17 @@
+#+TITLE: The Game of Life
+#+DESCRIPTION: An org document to show what to do
+#+Author: Aadi Jain
+
+* Manage the board
+** Create a safe way to have a board file
+** read a file and get all its info
+** MANAGE BUFFER-OVERFLOWS
+* Manage the UI
+** Create a zoom in and out system
+** Make the user able to go around the map
+* Game functionality
+** try using the GPU to optimize performance
+** try making the board go on forever in a still efficient way
+* TODO
+** TODO fix the get board functionaility
+** TODO make the basic game of life functionality
