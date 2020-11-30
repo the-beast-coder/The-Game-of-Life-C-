@@ -13,5 +13,8 @@
 ** try using the GPU to optimize performance
 ** try making the board go on forever in a still efficient way
 * TODO
-** TODO fix the get board functionaility
-** TODO make the basic game of life functionality
+** DONE fix the get board functionaility
+** DONE make the basic game of life functionality
+** TODO add some camera movement to enhance persons experience
+** TODO Create a way for the user to edit the board straight from the app
+** TODO Try to use the GPU for the game of life functionality
