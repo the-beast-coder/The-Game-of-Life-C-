@@ -16,6 +16,6 @@
 ** DONE fix the get board functionaility
 ** DONE make the basic game of life functionality
 ** DONE add some camera movement to enhance users experience
-** TODO create a zooming functionality for the user
+** DONE create a zooming functionality for the user
 ** TODO Create a way for the user to edit the board straight from the app
 ** TODO Try to use the GPU for the game of life functionality

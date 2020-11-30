@@ -16,6 +16,7 @@ int delay;
 bool shouldMove;
 
 float cameraOffset [2] = {0, 0};
+float zoom = 1;
 
 void render(void);
 void getBoard();
@@ -54,7 +55,7 @@ int main (int argc, char **argv) {
 
 void render (void) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glPointSize(width/boardWidth);
+    glPointSize(width/boardWidth * zoom);
     glBegin(GL_POINTS);
     int millisecondDifference = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()-prevTime).count();
     if (millisecondDifference > delay) {
@@ -66,7 +67,9 @@ void render (void) {
             if (board[y][x]) {
                 float thisX = 1.0 * x; //doing this to convert x to a float
                 float thisY = 1.0 * y; //doing this to convert x to a float
-                glVertex2f(thisX / boardWidth * 2 - 0.9 + cameraOffset[0], thisY / boardHeight * 2 - 0.9 + cameraOffset[1]);
+                thisX = thisX / boardWidth * 2 * zoom - 0.9 + cameraOffset[0];
+                thisY = thisY / boardHeight * 2 * zoom - 0.9 + cameraOffset[1];
+                glVertex2f(thisX, thisY);
             }
         }
     }
@@ -75,6 +78,7 @@ void render (void) {
 }
 
 void keyboard (unsigned char c, int x, int y) {
+    //moving around
     //inversed because the board moves the opposite direction of user
     if (c == 'd') {
         cameraOffset[0] -= 0.1;
@@ -87,6 +91,20 @@ void keyboard (unsigned char c, int x, int y) {
     }
     if (c == 's') {
         cameraOffset[1] += 0.1;
+    }
+
+    //zooming
+    if (c == '-') {
+        zoom -= 0.1;
+    } else if (c == '=') {
+        zoom += 0.1;
+    }
+
+    //chaging delay
+    if (c == 'z') {
+        delay -= 30;
+    } else if (c == 'x') {
+        delay += 30;
     }
 }
 
