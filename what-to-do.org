@@ -12,7 +12,7 @@
 * Game functionality
 ** try using the GPU to optimize performance
 ** try making the board go on forever in a still efficient way
-* TODO
+* Things to do
 ** DONE fix the get board functionaility
 ** DONE make the basic game of life functionality
 ** DONE add some camera movement to enhance users experience

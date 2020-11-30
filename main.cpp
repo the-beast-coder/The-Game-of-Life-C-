@@ -10,7 +10,6 @@ int height;
 
 int boardWidth;
 int boardHeight;
-
 std::chrono::time_point<std::chrono::steady_clock> prevTime;
 int delay;
 bool shouldMove;
@@ -27,8 +26,8 @@ void keyboard (unsigned char c, int x, int y);
 std::vector<std::vector<bool>> board;
 
 int main (int argc, char **argv) {
-    boardHeight = 10;
-    boardWidth = 10;
+    boardHeight = 30;
+    boardWidth = 30;
     width = 500;
     height = 500;
 
@@ -50,7 +49,6 @@ int main (int argc, char **argv) {
     glutKeyboardFunc(keyboard);
 
     glutMainLoop();
-
 }
 
 void render (void) {
