@@ -19,3 +19,9 @@
 ** DONE create a zooming functionality for the user
 ** TODO Create a way for the user to edit the board straight from the app
 ** TODO Try to use the GPU for the game of life functionality
+
+* Some things that didn't go as planned
+** I thought multithreading the process of the cell count would be a lot faster, however it often slows down my program.
+** Might not end up using the GPU as currently I do not know a way to use a graphics api, ex CUDA and link it with my program
+* Things to try out
+** Maybe use OpenCl for getting cells on the board

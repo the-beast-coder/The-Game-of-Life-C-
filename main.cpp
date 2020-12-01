@@ -4,6 +4,16 @@
 #include <vector>
 #include <bits/stdc++.h>
 #include <chrono>
+#include <thread>
+
+struct Vector2i {
+    uint16_t x;
+    uint16_t y;
+    Vector2i (uint16_t thisX, uint16_t thisY) {
+        x = thisX;
+        y = thisY;
+    }
+};
 
 int width;
 int height;
@@ -13,17 +23,19 @@ int boardHeight;
 std::chrono::time_point<std::chrono::steady_clock> prevTime;
 int delay;
 bool shouldMove;
+uint32_t generation;
 
 float cameraOffset [2] = {0, 0};
 float zoom = 1;
 
 void render(void);
 void getBoard();
-void move();
+void moveMultithread();
 void timer (int);
 void keyboard (unsigned char c, int x, int y);
 
 std::vector<std::vector<bool>> board;
+std::vector<std::vector<bool>> boardCopy; //boardDupl is used to help with the manipulation of the game of life board
 
 int main (int argc, char **argv) {
     boardHeight = 30;
@@ -33,6 +45,7 @@ int main (int argc, char **argv) {
 
     delay = 1000;
     prevTime = std::chrono::steady_clock::now();
+
 
     getBoard();
 
@@ -57,7 +70,9 @@ void render (void) {
     glBegin(GL_POINTS);
     int millisecondDifference = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()-prevTime).count();
     if (millisecondDifference > delay) {
-        move();
+        moveMultithread();
+        generation++;
+        std::cout << generation << std::endl;
         prevTime = std::chrono::steady_clock::now();
     }
     for (uint16_t y = 0; y < boardHeight; y++) {
@@ -106,47 +121,62 @@ void keyboard (unsigned char c, int x, int y) {
     }
 }
 
-void move () {
+void calculateCell (uint16_t x, uint16_t y) {
+
+    uint8_t surroundingCells = 0;
+    //check for horizontal cells
+    if (x > 0 && board[y][x-1]) {
+        surroundingCells++;
+    }
+    if (x < boardWidth-1 && board[y][x+1]) {
+        surroundingCells++;
+    }
+
+
+    //check for vertical cells
+    if (y > 0 && board[y-1][x]) {
+        surroundingCells++;
+    }
+    if (y < boardHeight-1 && board[y+1][x]) {
+        surroundingCells++;
+    }
+    
+    //check for diagonal cells
+    if (y > 0 && x > 0 && board[y-1][x-1]) {
+        surroundingCells++;
+    }
+    if (y > 0 && x < boardWidth-1 && board[y-1][x+1]) {
+        surroundingCells++;
+    }
+    if (y < boardHeight-1 && x > 0 && board[y+1][x-1]) {
+        surroundingCells++;
+    }
+    if (y < boardHeight-1 && x < boardWidth-1 && board[y+1][x+1]) {
+        surroundingCells++;
+    }
+    if ((surroundingCells > 3 || surroundingCells < 2) && board[y][x])
+        boardCopy[y][x] = false;
+    else if (surroundingCells == 3 && !board[y][x])
+        boardCopy[y][x] = true;
+
+}
+
+void calculateRow (int y) {
+    for (int x = 0; x < boardWidth; x++) {
+        calculateCell(x, y);
+    }
+}
+
+void moveMultithread () {
     //enter move code here
-    std::vector<std::vector<bool>> boardCopy = board;
-    for (int y = 0; y < boardHeight; y++) {
-        for (int x = 0; x < boardWidth; x++) {
-            uint16_t surroundingCells = 0;
-            //check for horizontal cells
-            if (x > 0 && board[y][x-1]) {
-               surroundingCells++;
-            }
-            if (x < boardWidth-1 && board[y][x+1]) {
-               surroundingCells++;}
-
-
-            //check for vertical cells
-            if (y > 0 && board[y-1][x]) {
-               surroundingCells++;
-            }
-            if (y < boardHeight-1 && board[y+1][x]) {
-                surroundingCells++;
-            }
-
-            //check for diagonal cells
-            if (y > 0 && x > 0 && board[y-1][x-1]) {
-                surroundingCells++;
-            }
-            if (y > 0 && x < boardWidth-1 && board[y-1][x+1]) {
-                surroundingCells++;
-            }
-            if (y < boardHeight-1 && x > 0 && board[y+1][x-1]) {
-                surroundingCells++;
-            }
-            if (y < boardHeight-1 && x < boardWidth-1 && board[y+1][x+1]) {
-                surroundingCells++;
-            }
-
-
-            if ((surroundingCells > 3 || surroundingCells < 2) && board[y][x])
-                boardCopy[y][x] = false;
-            else if (surroundingCells == 3 && !board[y][x])
-                boardCopy[y][x] = true;
+    boardCopy = board;
+    std::vector<std::thread> threads;
+    for (uint16_t y = 0; y < boardHeight; y++) {
+        threads.push_back(std::thread(calculateRow, y));
+    }
+    for (int i = 0; i < threads.size(); i++) {
+        if (threads[i].joinable()) {
+            threads[i].join();
         }
     }
     board = boardCopy;
@@ -166,10 +196,8 @@ void getBoard () {
             char thisChar = line.at(x);
             if (thisChar == '1') {
                 board[y].push_back(true);
-                std::cout << "1";
             } else {
                 board[y].push_back(false);
-                std::cout << "0";
             }
         }
         std::cout << std::endl;
@@ -179,6 +207,5 @@ void getBoard () {
 
 void timer (int) {
     glutPostRedisplay();
-
-    glutTimerFunc(20, timer, 0);
+    glutTimerFunc(10, timer, 0);
 }
