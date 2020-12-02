@@ -1,3 +1,13 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <bits/stdc++.h>
+
+int boardWidth;
+int boardHeight;
+
+std::vector<std::vector<bool>> board;
+std::vector<std::vector<bool>> boardCopy; //boardCopy is used to help with the manipulation of the game of life board
 
 void calculateCell (uint16_t x, uint16_t y) {
 
@@ -9,7 +19,6 @@ void calculateCell (uint16_t x, uint16_t y) {
     if (x < boardWidth-1 && board[y][x+1]) {
 	surroundingCells++;
     }
-
 
     //check for vertical cells
     if (y > 0 && board[y-1][x]) {
@@ -39,10 +48,17 @@ void calculateCell (uint16_t x, uint16_t y) {
 
 }
 
+void calculateRows (uint16_t startingRow, uint16_t endingRow) {
+    for (int y = startingRow; y < endingRow; y++) {
+	for (int x = 0; x < boardWidth; x++) {
+	    calculateCell(x, y);
+	}
+    }
+}
 
 void getBoard () {
-
-    std::ifstream file("board.txt");
+    
+    std::ifstream file("../rsrc/board.txt");
 
     std::string line;
 

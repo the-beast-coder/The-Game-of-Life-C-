@@ -1,9 +1,9 @@
 everything:
-	g++ -c main.cpp board.cpp
-	g++ *.o -lglut -lGL -lGLU -lpthread
-	./a.out
+	g++ -c src/*.cpp
+	g++ *.o -lglut -lGL -lGLU -lpthread -o bin/a.out
+	cd bin; ./a.out
 build:
-	g++ -c main.cpp board.cpp
-	g++ *.o -lglut -lGL -lGLU -lpthread
+	g++ -c src/*.cpp
+	g++ *.o -lglut -lGL -lGLU -lpthread -o bin/a.out
 run:
-	./a.out
+	cd bin; ./a.out
