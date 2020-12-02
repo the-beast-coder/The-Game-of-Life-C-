@@ -48,9 +48,11 @@ void calculateCell (uint16_t x, uint16_t y) {
 
 }
 
-void calculateRow (uint16_t y) {
-    for (int x = 0; x < boardWidth; x++) {
-	calculateCell(x, y);
+void calculateRows (uint16_t startingRow, uint16_t endingRow) {
+    for (int y = startingRow; y < endingRow; y++) {
+	for (int x = 0; x < boardWidth; x++) {
+	    calculateCell(x, y);
+	}
     }
 }
 

@@ -5,6 +5,7 @@
 #include <bits/stdc++.h>
 #include <chrono>
 #include <thread>
+#include <math.h>
 
 struct Vector2i {
     uint16_t x;
@@ -27,15 +28,17 @@ extern std::vector<std::vector<bool>> boardCopy; //boardCopy is used to help wit
 std::chrono::time_point<std::chrono::steady_clock> prevTime;
 int delay;
 bool shouldMove;
+
 uint32_t generation;
 
 float cameraOffset [2] = {0, 0};
 float zoom = 1;
+uint16_t numOfCores;
 
 void render(void);
 
 void getBoard();
-void calculateRow(uint16_t y);
+void calculateRows(uint16_t x, uint16_t y);
 void calculateCell (uint16_t x, uint16_t y);
 
 void moveMultithread();
@@ -47,10 +50,12 @@ int main (int argc, char **argv) {
     boardWidth = 30;
     width = 500;
     height = 500;
-
+    
     delay = 1000;
     prevTime = std::chrono::steady_clock::now();
 
+    numOfCores = 6;
+    numOfCores -= 1; //subtracting by 1 cuz main loop uses 1 core
 
     getBoard();
 
@@ -77,7 +82,6 @@ void render (void) {
     if (millisecondDifference > delay) {
         moveMultithread();
         generation++;
-        std::cout << generation << std::endl;
         prevTime = std::chrono::steady_clock::now();
     }
     for (uint16_t y = 0; y < boardHeight; y++) {
@@ -120,9 +124,9 @@ void keyboard (unsigned char c, int x, int y) {
 
     //chaging delay
     if (c == 'z') {
-        delay -= 30;
+        delay -= 50;
     } else if (c == 'x') {
-        delay += 30;
+        delay += 50;
     }
 }
 
@@ -130,9 +134,25 @@ void moveMultithread () {
     //enter move code here
     boardCopy = board;
     std::vector<std::thread> threads;
-    for (uint16_t y = 0; y < boardHeight; y++) {
-        threads.push_back(std::thread(calculateRow, y));
+
+    std::vector <uint16_t> threadAllocation(numOfCores);
+    std::fill(threadAllocation.begin(), threadAllocation.end(), floor(boardHeight/numOfCores));
+
+    uint16_t remainder = boardHeight % numOfCores;
+
+    uint16_t counter = 0;
+    while (remainder > 0) {
+	threadAllocation[counter] += 1;
+	counter++; remainder--;
     }
+
+    uint16_t thisRow = 0;
+    
+    for (uint16_t i = 0; i < threadAllocation.size(); i++) {
+	threads.push_back(std::thread(calculateRows, thisRow, thisRow+threadAllocation[i]));
+	thisRow += threadAllocation[i];
+    }
+    
     for (int i = 0; i < threads.size(); i++) {
         if (threads[i].joinable()) {
             threads[i].join();
