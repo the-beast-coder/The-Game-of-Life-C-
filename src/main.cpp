@@ -35,6 +35,10 @@ float cameraOffset [2] = {0, 0};
 float zoom = 1;
 uint16_t numOfCores;
 
+std::vector <uint16_t> threadAllocation;
+uint16_t threadRemainder;
+
+
 void render(void);
 
 void getBoard();
@@ -51,12 +55,29 @@ int main (int argc, char **argv) {
     width = 500;
     height = 500;
     
-    delay = 1000;
+    delay = 0;
     prevTime = std::chrono::steady_clock::now();
 
-    numOfCores = 6;
-    numOfCores -= 1; //subtracting by 1 cuz main loop uses 1 core
+    //get core count of processer
+    numOfCores = std::thread::hardware_concurrency();
+    
+    //after some testing subtracting 2 to the computer core count seems to be the most efficient option
+    numOfCores -= 2; //subtracting 2 is probably the case cuz main takes one core and opengl takes another
+    if (numOfCores < 1)
+	numOfCores = 1; //make sure that not less than 1 core is used
 
+
+    for (int i = 0; i < numOfCores; i++)
+	threadAllocation.push_back(floor(boardHeight / numOfCores));
+
+    threadRemainder = boardHeight % numOfCores;
+    uint16_t counter = 0;
+    
+    while (threadRemainder > 0) {
+	threadAllocation[counter] += 1;
+	counter++; threadRemainder--;
+    }
+    
     getBoard();
 
     //glut window initialization
@@ -135,17 +156,6 @@ void moveMultithread () {
     boardCopy = board;
     std::vector<std::thread> threads;
 
-    std::vector <uint16_t> threadAllocation(numOfCores);
-    std::fill(threadAllocation.begin(), threadAllocation.end(), floor(boardHeight/numOfCores));
-
-    uint16_t remainder = boardHeight % numOfCores;
-
-    uint16_t counter = 0;
-    while (remainder > 0) {
-	threadAllocation[counter] += 1;
-	counter++; remainder--;
-    }
-
     uint16_t thisRow = 0;
     
     for (uint16_t i = 0; i < threadAllocation.size(); i++) {
@@ -163,5 +173,6 @@ void moveMultithread () {
 
 void timer (int) {
     glutPostRedisplay();
-    glutTimerFunc(10, timer, 0);
+    //1 mil delay just to make sure that it doesn't try going inifitly fast idk
+    glutTimerFunc(1, timer, 0);
 }
