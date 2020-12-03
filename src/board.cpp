@@ -64,6 +64,7 @@ void getBoard () {
 
     for (int y = 0; y < boardHeight; y++) {
 	getline(file, line);
+
 	board.push_back({}); //create a blank new vector
 
 	for (int x = 0; x < boardWidth; x++) {

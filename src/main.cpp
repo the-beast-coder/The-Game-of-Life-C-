@@ -50,12 +50,12 @@ void timer (int);
 void keyboard (unsigned char c, int x, int y);
 
 int main (int argc, char **argv) {
-    boardHeight = 30;
-    boardWidth = 30;
+    boardHeight = 75;
+    boardWidth = 75;
     width = 500;
     height = 500;
     
-    delay = 0;
+    delay = 500;
     prevTime = std::chrono::steady_clock::now();
 
     //get core count of processer
